@@ -78,11 +78,17 @@ function DetailsPopup({
     };
 
     try {
-      const generatedQuestions = (await axios.post("/api/generate-interview-questions", data)) as any;
-      
+      const generatedQuestions = (await axios.post(
+        "/api/generate-interview-questions",
+        data,
+      )) as any;
+
       let responseText = generatedQuestions?.data?.response;
       if (typeof responseText === "string") {
-        responseText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+        responseText = responseText
+          .replace(/```json\n?/g, "")
+          .replace(/```\n?/g, "")
+          .trim();
       }
 
       const generatedQuestionsResponse = JSON.parse(responseText);
@@ -111,7 +117,9 @@ function DetailsPopup({
       console.error("DEBUG API RAW ERROR:", e);
       setLoading(false);
       setIsClicked(false);
-      toast.error(`Uh oh! Failed to generate questions: ${e instanceof Error ? e.message : "Unknown error"}. Check console for details.`);
+      toast.error(
+        `Uh oh! Failed to generate questions: ${e instanceof Error ? e.message : "Unknown error"}. Check console for details.`,
+      );
     }
   };
 

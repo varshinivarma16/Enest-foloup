@@ -1,7 +1,7 @@
 import { logger } from "@/lib/logger";
 import { SYSTEM_PROMPT, generateQuestionsPrompt } from "@/lib/prompts/generate-questions";
-import { NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
+import { NextResponse } from "next/server";
 
 export const maxDuration = 60;
 

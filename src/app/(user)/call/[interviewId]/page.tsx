@@ -28,7 +28,6 @@ function PopupLoader() {
           <LoaderWithText />
         </div>
       </div>
-
     </div>
   );
 }
@@ -43,7 +42,6 @@ function PopUpMessage({ title, description, image }: PopupProps) {
           <p>{description}</p>
         </div>
       </div>
-
     </div>
   );
 }
@@ -109,7 +107,6 @@ function InterviewInterface({ params }: Props) {
             Please use a PC to respond to the interview. Apologies for any inconvenience caused.{" "}
           </p>
         </div>
-
       </div>
     </div>
   );

@@ -20,7 +20,10 @@ export function ClientProvider({ children }: ClientProviderProps) {
   const [client, setClient] = useState<User>();
   const [clientLoading, setClientLoading] = useState(true);
 
-  const user: any = { id: "default-user", emailAddresses: [{ emailAddress: "default@example.com" }] };
+  const user: any = {
+    id: "default-user",
+    emailAddresses: [{ emailAddress: "default@example.com" }],
+  };
   const organization = { id: "default-org", name: "default" };
 
   const fetchClient = async () => {

@@ -530,7 +530,6 @@ function Call({ interview }: InterviewProps) {
             )}
           </div>
         </Card>
-
       </div>
     </div>
   );

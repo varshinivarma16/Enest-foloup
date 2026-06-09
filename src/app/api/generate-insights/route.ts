@@ -2,8 +2,8 @@ import { logger } from "@/lib/logger";
 import { SYSTEM_PROMPT, createUserPrompt } from "@/lib/prompts/generate-insights";
 import { InterviewService } from "@/services/interviews.service";
 import { ResponseService } from "@/services/responses.service";
-import { NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
+import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   logger.info("generate-insights request received");

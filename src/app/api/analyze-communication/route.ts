@@ -3,8 +3,8 @@ import {
   SYSTEM_PROMPT,
   getCommunicationAnalysisPrompt,
 } from "@/lib/prompts/communication-analysis";
-import { NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
+import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   logger.info("analyze-communication request received");
