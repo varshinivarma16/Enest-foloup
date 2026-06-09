@@ -2,7 +2,6 @@
 
 import { InterviewService } from "@/services/interviews.service";
 import type { Interview } from "@/types/interview";
-import { useClerk, useOrganization } from "@clerk/nextjs";
 import React, { useState, useContext, type ReactNode, useEffect } from "react";
 
 interface InterviewContextProps {
@@ -29,9 +28,9 @@ interface InterviewProviderProps {
 
 export function InterviewProvider({ children }: InterviewProviderProps) {
   const [interviews, setInterviews] = useState<Interview[]>([]);
-  const { user } = useClerk();
-  const { organization } = useOrganization();
   const [interviewsLoading, setInterviewsLoading] = useState(false);
+  const user = { id: "default-user" };
+  const organization = { id: "default-org" };
 
   const fetchInterviews = async () => {
     try {

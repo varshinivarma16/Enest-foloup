@@ -7,8 +7,6 @@ const getAllInterviewers = async (clientId = "") => {
     const { data: clientData, error: clientError } = await supabase.from("interviewer").select("*");
 
     if (clientError) {
-      console.error(`Error fetching interviewers for clientId ${clientId}:`, clientError);
-
       return [];
     }
 

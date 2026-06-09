@@ -11,12 +11,14 @@ import axios from "axios";
 import { ChevronLeft, ChevronRight, Info } from "lucide-react";
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
 import FileUpload from "../fileUpload";
 
 interface Props {
   open: boolean;
   setLoading: (loading: boolean) => void;
+  setProceed: (proceed: boolean) => void;
   interviewData: InterviewBase;
   setInterviewData: (interviewData: InterviewBase) => void;
   isUploaded: boolean;
@@ -28,6 +30,7 @@ interface Props {
 function DetailsPopup({
   open,
   setLoading,
+  setProceed,
   interviewData,
   setInterviewData,
   isUploaded,
@@ -74,28 +77,42 @@ function DetailsPopup({
       context: uploadedDocumentContext,
     };
 
-    const generatedQuestions = (await axios.post("/api/generate-interview-questions", data)) as any;
+    try {
+      const generatedQuestions = (await axios.post("/api/generate-interview-questions", data)) as any;
+      
+      let responseText = generatedQuestions?.data?.response;
+      if (typeof responseText === "string") {
+        responseText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      }
 
-    const generatedQuestionsResponse = JSON.parse(generatedQuestions?.data?.response);
+      const generatedQuestionsResponse = JSON.parse(responseText);
 
-    const updatedQuestions = generatedQuestionsResponse.questions.map((question: Question) => ({
-      id: uuidv4(),
-      question: question.question.trim(),
-      follow_up_count: 1,
-    }));
+      const updatedQuestions = generatedQuestionsResponse.questions.map((question: Question) => ({
+        id: uuidv4(),
+        question: question.question.trim(),
+        follow_up_count: 1,
+      }));
 
-    const updatedInterviewData = {
-      ...interviewData,
-      name: name.trim(),
-      objective: objective.trim(),
-      questions: updatedQuestions,
-      interviewer_id: selectedInterviewer,
-      question_count: Number(numQuestions),
-      time_duration: duration,
-      description: generatedQuestionsResponse.description,
-      is_anonymous: isAnonymous,
-    };
-    setInterviewData(updatedInterviewData);
+      const updatedInterviewData = {
+        ...interviewData,
+        name: name.trim(),
+        objective: objective.trim(),
+        questions: updatedQuestions,
+        interviewer_id: selectedInterviewer,
+        question_count: Number(numQuestions),
+        time_duration: duration,
+        description: generatedQuestionsResponse.description,
+        is_anonymous: isAnonymous,
+      };
+      setInterviewData(updatedInterviewData);
+      setLoading(false);
+      setProceed(true);
+    } catch (e) {
+      console.error("DEBUG API RAW ERROR:", e);
+      setLoading(false);
+      setIsClicked(false);
+      toast.error(`Uh oh! Failed to generate questions: ${e instanceof Error ? e.message : "Unknown error"}. Check console for details.`);
+    }
   };
 
   const onManual = () => {
@@ -113,6 +130,8 @@ function DetailsPopup({
       is_anonymous: isAnonymous,
     };
     setInterviewData(updatedInterviewData);
+    setLoading(false);
+    setProceed(true);
   };
 
   useEffect(() => {

@@ -1,12 +1,12 @@
-[![GitHub stars](https://img.shields.io/github/stars/FoloUp/FoloUp?style=social)](https://github.com/FoloUp/FoloUp/stargazers)
-![License](https://img.shields.io/github/license/foloup/foloup)
+[![GitHub stars](https://img.shields.io/github/stars/E-nest/E-nest?style=social)](https://github.com/E-nest/E-nest/stargazers)
+![License](https://img.shields.io/github/license/E-nest/E-nest)
 [![Twitter Follow](https://img.shields.io/twitter/follow/SuveenE?style=social)](https://x.com/SuveenE)
 
-# FoloUp - AI-powered voice interviewer for hiring 💼
+# E-nest - AI-powered voice interviewer for hiring 💼
 
-FoloUp is an open source platform for companies to conduct AI powered hiring interviews with their candidates.
+E-nest is an open source platform for companies to conduct AI powered hiring interviews with their candidates.
 
-<img src="https://github.com/user-attachments/assets/fa92ade1-02ea-4332-b5ed-97056dea01c3" alt="FoloUp Logo" width="800">
+<img src="https://github.com/user-attachments/assets/fa92ade1-02ea-4332-b5ed-97056dea01c3" alt="E-nest Logo" width="800">
 
 <div style="display: flex; flex-direction: row; gap: 20px; margin: 20px 0;">
   <picture>
@@ -32,7 +32,7 @@ Here's a [loom](https://www.loom.com/share/762fd7d12001490bbfdcf3fac37ff173?sid=
 1. Clone the project.
 
 ```bash
-git clone https://github.com/FoloUp/FoloUp.git
+git clone https://github.com/E-nest/E-nest.git
 ```
 
 2. Copy the existing environment template file
@@ -41,21 +41,7 @@ git clone https://github.com/FoloUp/FoloUp.git
 cp .env.example .env
 ```
 
-## Clerk Setup ([Clerk](https://clerk.com/))
 
-We use Clerk for authentication. Set up Clerk environment variables in the `.env` file. Free plan should be more than enough.
-
-1. Navigate to [Clerk](https://dashboard.clerk.com/) and create an application following the [setup guide](https://clerk.com/docs/quickstarts/setup-clerk).
-
-<img src="https://github.com/user-attachments/assets/faa72830-10b0-4dfd-8f07-792e7520b6a2" alt="Clerk Environment Variables" width="800">
-
-2. Your `.env` (NOT `.env.local`) file should have the `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` variables populated with **no inverted commas**
-
-3. Enable organizations in your Clerk application by navigating to the [Organization Settings](https://dashboard.clerk.com/last-active?path=organizations-settings&_gl=1*58xbvk*_gcl_au*MTEzODk3NzAyMy4xNzM4NjQzMzU3*_ga*MzUyMTk4NzIwLjE3Mzg2NDM0NzY.*_ga_1WMF5X234K*MTczODczNzkxOC4zLjEuMTczODczNzkyNi4wLjAuMA..) page.
-
-<img src="https://github.com/user-attachments/assets/381cd138-439a-4b4f-ae87-50414fb1d64b" alt="Clerk Organization Settings" width="800">
-
-4. Make sure you create an organization and invite your email to it.
 
 ## Database Setup ([Supabase](https://supabase.com/))
 
@@ -75,12 +61,12 @@ We use Retell AI to manage all the voice calls. They manage storage of recording
 
 1. Create an API key from [Retell AI Dashboard](https://dashboard.retellai.com/apiKey) and add it to the `.env` file in `RETELL_API_KEY`
 
-## Add OpenAI API Key
+## Add Gemini API Key
 
-We use OpenAI to generate questions for interviews and analyze responses. This would not be that costly.
+We use Gemini to generate questions for interviews and analyze responses.
 
-1. Go to [OpenAI](https://platform.openai.com/api-keys) and create an API key
-2. Add the API key to the `.env` file in `OPENAI_API_KEY`
+1. Go to [Google AI Studio](https://aistudio.google.com/app/apikey) and create an API key
+2. Add the API key to the `.env` file in `GEMINI_API_KEY`
 
 ## Getting Started locally
 
@@ -104,15 +90,15 @@ We recommend using [Vercel](https://vercel.com/) to host the app.
 
 ## Contributing
 
-If you'd like to contribute to FoloUp, feel free to fork the repository, make your changes, and submit a pull request. Contributions are welcomed and appreciated.
+If you'd like to contribute to E-nest, feel free to fork the repository, make your changes, and submit a pull request. Contributions are welcomed and appreciated.
 
 For a detailed guide on contributing, read the [CONTRIBUTING.md](CONTRIBUTING.md) file.
 
 ## Show Your Support 🌟
 
-If you find FoloUp helpful, please consider giving us a star on GitHub! It helps us reach more developers and continue improving the project.
+If you find E-nest helpful, please consider giving us a star on GitHub! It helps us reach more developers and continue improving the project.
 
-## Products built on top of FoloUp 🚀
+## Products built on top of E-nest 🚀
 
 <div style="display: flex; flex-direction: row; gap: 40px; align-items: center;">
   <a href="https://talvin.ai/" target="_blank" style="text-align: center; text-decoration: none;">

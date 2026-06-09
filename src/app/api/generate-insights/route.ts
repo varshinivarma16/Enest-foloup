@@ -3,7 +3,7 @@ import { SYSTEM_PROMPT, createUserPrompt } from "@/lib/prompts/generate-insights
 import { InterviewService } from "@/services/interviews.service";
 import { ResponseService } from "@/services/responses.service";
 import { NextResponse } from "next/server";
-import { OpenAI } from "openai";
+import { GoogleGenAI } from "@google/genai";
 
 export async function POST(req: Request) {
   logger.info("generate-insights request received");
@@ -19,10 +19,8 @@ export async function POST(req: Request) {
     }
   }
 
-  const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-    maxRetries: 5,
-    dangerouslyAllowBrowser: true,
+  const ai = new GoogleGenAI({
+    apiKey: process.env.GEMINI_API_KEY,
   });
 
   try {
@@ -33,23 +31,16 @@ export async function POST(req: Request) {
       interview.description,
     );
 
-    const baseCompletion = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        {
-          role: "system",
-          content: SYSTEM_PROMPT,
-        },
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-      response_format: { type: "json_object" },
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
+      config: {
+        systemInstruction: SYSTEM_PROMPT,
+        responseMimeType: "application/json",
+      },
     });
 
-    const basePromptOutput = baseCompletion.choices[0] || {};
-    const content = basePromptOutput.message?.content || "";
+    const content = response.text || "{}";
     const insightsResponse = JSON.parse(content);
 
     await InterviewService.updateInterview(

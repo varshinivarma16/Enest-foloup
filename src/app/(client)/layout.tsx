@@ -5,7 +5,6 @@ import Navbar from "@/components/navbar";
 import Providers from "@/components/providers";
 import SideMenu from "@/components/sideMenu";
 import { cn } from "@/lib/utils";
-import { ClerkProvider } from "@clerk/nextjs";
 import { Inter } from "next/font/google";
 import { usePathname } from "next/navigation";
 import { Toaster } from "sonner";
@@ -13,15 +12,15 @@ import { Toaster } from "sonner";
 const inter = Inter({ subsets: ["latin"] });
 
 const metadata = {
-  title: "FoloUp",
+  title: "E-nest",
   description: " AI-powered Interviews",
   openGraph: {
-    title: "FoloUp",
+    title: "E-nest",
     description: "AI-powered Interviews",
-    siteName: "FoloUp",
+    siteName: "E-nest",
     images: [
       {
-        url: "/foloup.png",
+        url: "/E-nest.png",
         width: 800,
         height: 600,
       },
@@ -37,7 +36,6 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const isAuthRoute = pathname.includes("/sign-in") || pathname.includes("/sign-up");
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -46,26 +44,15 @@ export default function RootLayout({
         <meta name="description" content={metadata.description} />
         <link rel="icon" href="/browser-client-icon.ico" />
       </head>
-      <body className={cn(inter.className, "antialiased overflow-hidden min-h-screen")}>
-        <ClerkProvider
-          dynamic
-          signInFallbackRedirectUrl={"/dashboard"}
-          afterSignOutUrl={"/sign-in"}
-        >
-          <Providers>
-            {isAuthRoute ? (
-              children
-            ) : (
-              <>
-                <Navbar />
-                <div className="flex flex-row h-screen">
-                  <SideMenu />
-                  <div className="ml-[200px] pt-[64px] h-full overflow-y-auto flex-grow">
-                    {children}
-                  </div>
-                </div>
-              </>
-            )}
+      <body suppressHydrationWarning className={cn(inter.className, "antialiased overflow-hidden min-h-screen")}>
+        <Providers>
+          <Navbar />
+          <div className="flex flex-row h-screen">
+            <SideMenu />
+            <div className="ml-[200px] pt-[64px] h-full overflow-y-auto flex-grow">
+              {children}
+            </div>
+          </div>
             <Toaster
               toastOptions={{
                 classNames: {
@@ -79,7 +66,6 @@ export default function RootLayout({
               }}
             />
           </Providers>
-        </ClerkProvider>
       </body>
     </html>
   );

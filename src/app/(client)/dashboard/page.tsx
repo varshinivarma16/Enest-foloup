@@ -8,14 +8,14 @@ import { useInterviews } from "@/contexts/interviews.context";
 import { ClientService } from "@/services/clients.service";
 import { InterviewService } from "@/services/interviews.service";
 import { ResponseService } from "@/services/responses.service";
-import { useOrganization } from "@clerk/nextjs";
+
 import { Gem, Plus } from "lucide-react";
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
 
 function Interviews() {
   const { interviews, interviewsLoading } = useInterviews();
-  const { organization } = useOrganization();
+  const organization = { id: "default-org" };
   const [loading, setLoading] = useState<boolean>(false);
   const [currentPlan, setCurrentPlan] = useState<string>("");
   const [allowedResponsesCount, setAllowedResponsesCount] = useState<number>(10);
@@ -90,7 +90,11 @@ function Interviews() {
         <h3 className=" text-sm tracking-tight text-gray-600 font-medium ">
           Start getting responses now!
         </h3>
-        <div className="relative flex items-center mt-1 flex-wrap">
+      </div>
+
+      <div className="flex flex-col lg:flex-row mt-6 gap-8 items-start">
+        <div className="flex-1">
+          <div className="relative flex items-start flex-wrap">
           {currentPlan === "free_trial_over" ? (
             <Card className=" flex bg-gray-200 items-center border-dashed border-gray-700 border-2 hover:scale-105 ease-in-out duration-300 h-60 w-56 ml-1 mr-3 mt-4 rounded-xl shrink-0 overflow-hidden shadow-md">
               <CardContent className="flex items-center flex-col mx-auto">
@@ -150,7 +154,7 @@ function Interviews() {
                       </div>
                     </div>
                     <p className="text-l text-center">
-                      Contact <span className="font-semibold">founders@folo-up.co</span> to upgrade
+                      Contact <span className="font-semibold">founders@E-nest.co</span> to upgrade
                       your plan.
                     </p>
                   </div>
@@ -168,6 +172,39 @@ function Interviews() {
               ))}
             </>
           )}
+          </div>
+        </div>
+
+        {/* Right Area (Instructions) */}
+        <div className="w-full lg:w-[350px] xl:w-[400px] shrink-0 p-6 bg-indigo-50 border border-indigo-100 rounded-xl shadow-sm text-indigo-950">
+          <h4 className="text-lg font-semibold flex items-center mb-5">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Quick Guide
+          </h4>
+          
+          <div className="space-y-6 text-sm">
+            <div>
+              <h5 className="font-semibold text-indigo-800">1. Create an Interview</h5>
+              <p className="mt-1 text-gray-600">Click the "Create an Interview" card to start. Set your objectives, target audience, and add required questions for the AI agent to ask.</p>
+            </div>
+            
+            <div>
+              <h5 className="font-semibold text-indigo-800">2. Customize the Interviewer</h5>
+              <p className="mt-1 text-gray-600">Go to the "Interviewers" tab on the left sidebar. There, you can customize the voice, personality (empathy, rapport, exploration), and avatar of your AI agent.</p>
+            </div>
+            
+            <div>
+              <h5 className="font-semibold text-indigo-800">3. Share the Link</h5>
+              <p className="mt-1 text-gray-600">Once your interview is created, click the link icon on your interview card to copy the unique URL. Share this with your respondents so they can take the interview.</p>
+            </div>
+            
+            <div>
+              <h5 className="font-semibold text-indigo-800">4. Analyze Responses</h5>
+              <p className="mt-1 text-gray-600">As participants complete the interview, their transcripts and extracted insights will appear in your dashboard for review.</p>
+            </div>
+          </div>
         </div>
       </div>
     </main>

@@ -25,7 +25,7 @@ import { InterviewService } from "@/services/interviews.service";
 import { ResponseService } from "@/services/responses.service";
 import type { Interview } from "@/types/interview";
 import type { Response } from "@/types/response";
-import { useOrganization } from "@clerk/nextjs";
+
 import { Eye, Filter, Palette, Pencil, Share2, UserIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect, use } from "react";
@@ -60,7 +60,7 @@ function InterviewHome({ params, searchParams }: Props) {
   const [showColorPicker, setShowColorPicker] = useState<boolean>(false);
   const [themeColor, setThemeColor] = useState<string>("#4F46E5");
   const [iconColor, seticonColor] = useState<string>("#4F46E5");
-  const { organization } = useOrganization();
+  const organization = { id: "default-org" };
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
 
   const seeInterviewPreviewPage = () => {
@@ -500,21 +500,23 @@ function InterviewHome({ params, searchParams }: Props) {
           </div>
         </>
       )}
-      <Modal open={showColorPicker} closeOnOutsideClick={false} onClose={applyColorChange}>
-        <div className="w-[250px] p-3">
-          <h3 className="text-lg font-semibold mb-4 text-center">Choose a Theme Color</h3>
-          <ChromePicker
-            disableAlpha={true}
-            color={themeColor}
-            styles={{
-              default: {
-                picker: { width: "100%" },
-              },
-            }}
-            onChange={handleColorChange}
-          />
-        </div>
-      </Modal>
+      {showColorPicker && (
+        <Modal open={showColorPicker} closeOnOutsideClick={false} onClose={applyColorChange}>
+          <div className="w-[250px] p-3">
+            <h3 className="text-lg font-semibold mb-4 text-center">Choose a Theme Color</h3>
+            <ChromePicker
+              disableAlpha={true}
+              color={themeColor}
+              styles={{
+                default: {
+                  picker: { width: "100%" },
+                },
+              }}
+              onChange={handleColorChange}
+            />
+          </div>
+        </Modal>
+      )}
       {isSharePopupOpen && (
         <SharePopup
           open={isSharePopupOpen}

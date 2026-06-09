@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useInterviews } from "@/contexts/interviews.context";
 import type { InterviewBase, Question } from "@/types/interview";
-import { useClerk, useOrganization } from "@clerk/nextjs";
+
 import axios from "axios";
 import { Plus } from "lucide-react";
 import { ChevronLeft } from "lucide-react";
@@ -17,8 +17,8 @@ interface Props {
 }
 
 function QuestionsPopup({ interviewData, setProceed, setOpen }: Props) {
-  const { user } = useClerk();
-  const { organization } = useOrganization();
+  const user = { id: "default-user" };
+  const organization = { id: "default-org", name: "default", imageUrl: "" };
   const [isClicked, setIsClicked] = useState(false);
 
   const [questions, setQuestions] = useState<Question[]>(interviewData.questions);

@@ -4,7 +4,7 @@ import {
   getCommunicationAnalysisPrompt,
 } from "@/lib/prompts/communication-analysis";
 import { NextResponse } from "next/server";
-import { OpenAI } from "openai";
+import { GoogleGenAI } from "@google/genai";
 
 export async function POST(req: Request) {
   logger.info("analyze-communication request received");
@@ -17,28 +17,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Transcript is required" }, { status: 400 });
     }
 
-    const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-      maxRetries: 5,
-      dangerouslyAllowBrowser: true,
+    const ai = new GoogleGenAI({
+      apiKey: process.env.GEMINI_API_KEY,
     });
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        {
-          role: "system",
-          content: SYSTEM_PROMPT,
-        },
-        {
-          role: "user",
-          content: getCommunicationAnalysisPrompt(transcript),
-        },
-      ],
-      response_format: { type: "json_object" },
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: getCommunicationAnalysisPrompt(transcript),
+      config: {
+        systemInstruction: SYSTEM_PROMPT,
+        responseMimeType: "application/json",
+      },
     });
 
-    const analysis = completion.choices[0]?.message?.content;
+    const analysis = response.text;
 
     logger.info("Communication analysis completed successfully");
 
