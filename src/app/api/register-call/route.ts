@@ -1,7 +1,7 @@
 import { logger } from "@/lib/logger";
+import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 import Retell from "retell-sdk";
-import { createClient } from "@supabase/supabase-js";
 
 const retellClient = new Retell({
   apiKey: process.env.RETELL_API_KEY || "",
@@ -9,7 +9,7 @@ const retellClient = new Retell({
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
 );
 
 export async function POST(req: Request) {

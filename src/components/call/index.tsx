@@ -20,7 +20,15 @@ import { ResponseService } from "@/services/responses.service";
 import type { Interview } from "@/types/interview";
 import type { FeedbackData } from "@/types/response";
 import axios from "axios";
-import { AlarmClockIcon, ArrowUpRightSquareIcon, CheckCircleIcon, Loader2, VideoIcon, VideoOffIcon, XCircleIcon } from "lucide-react";
+import {
+  AlarmClockIcon,
+  ArrowUpRightSquareIcon,
+  CheckCircleIcon,
+  Loader2,
+  VideoIcon,
+  VideoOffIcon,
+  XCircleIcon,
+} from "lucide-react";
 import Image from "next/image";
 import React, { useState, useEffect, useRef } from "react";
 import { RetellWebClient } from "retell-client-js-sdk";
@@ -102,7 +110,9 @@ function Call({ interview }: InterviewProps) {
 
     return () => {
       // Cleanup camera stream on unmount
-      mediaStreamRef.current?.getTracks().forEach((t) => t.stop());
+      for (const t of mediaStreamRef.current?.getTracks() || []) {
+        t.stop();
+      }
     };
   }, []);
 
@@ -127,22 +137,30 @@ function Call({ interview }: InterviewProps) {
   }, [isStarted, cameraAllowed]);
 
   const startRecording = () => {
-    if (!mediaStreamRef.current) return;
+    if (!mediaStreamRef.current) {
+      return;
+    }
     recordedChunksRef.current = [];
     uploadPromiseRef.current = null;
     const recorder = new MediaRecorder(mediaStreamRef.current);
     recorder.ondataavailable = (e) => {
-      if (e.data.size > 0) recordedChunksRef.current.push(e.data);
+      if (e.data.size > 0) {
+        recordedChunksRef.current.push(e.data);
+      }
     };
     recorder.start(1000); // collect data every second
     mediaRecorderRef.current = recorder;
   };
 
   const stopRecordingAndUpload = (currentCallId: string): Promise<void> => {
-    if (uploadPromiseRef.current) return uploadPromiseRef.current;
+    if (uploadPromiseRef.current) {
+      return uploadPromiseRef.current;
+    }
 
     const recorder = mediaRecorderRef.current;
-    if (!recorder || recorder.state === "inactive") return Promise.resolve();
+    if (!recorder || recorder.state === "inactive") {
+      return Promise.resolve();
+    }
 
     uploadPromiseRef.current = new Promise<void>((resolve) => {
       recorder.onstop = async () => {
@@ -170,7 +188,9 @@ function Call({ interview }: InterviewProps) {
           }
         }
         // Stop camera tracks
-        mediaStreamRef.current?.getTracks().forEach((t) => t.stop());
+        for (const t of mediaStreamRef.current?.getTracks() || []) {
+          t.stop();
+        }
         resolve();
       };
       recorder.stop();
@@ -178,7 +198,6 @@ function Call({ interview }: InterviewProps) {
 
     return uploadPromiseRef.current;
   };
-
 
   const handleFeedbackSubmit = async (formData: Omit<FeedbackData, "interview_id">) => {
     try {
@@ -231,6 +250,7 @@ function Call({ interview }: InterviewProps) {
     }
   }, [email]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: handlers depend on component state but shouldn't rebind repeatedly
   useEffect(() => {
     webClient.on("call_started", () => {
       console.log("Call started");
@@ -441,7 +461,9 @@ function Call({ interview }: InterviewProps) {
                     {cameraAllowed === true && (
                       <>
                         <VideoIcon size={14} className="text-green-500" />
-                        <span className="text-green-600">Camera ready — your video will be recorded</span>
+                        <span className="text-green-600">
+                          Camera ready — your video will be recorded
+                        </span>
                       </>
                     )}
                     {cameraAllowed === false && (
@@ -568,7 +590,9 @@ function Call({ interview }: InterviewProps) {
                         </div>
                       )}
                       {/* "You" label — top-left */}
-                      <div className={`absolute top-3 left-3 bg-black/40 text-white text-sm font-semibold px-3 py-1 rounded-full border ${activeTurn === "user" ? "border-indigo-400" : "border-transparent"}`}>
+                      <div
+                        className={`absolute top-3 left-3 bg-black/40 text-white text-sm font-semibold px-3 py-1 rounded-full border ${activeTurn === "user" ? "border-indigo-400" : "border-transparent"}`}
+                      >
                         You
                       </div>
                     </>

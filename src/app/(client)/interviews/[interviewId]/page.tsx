@@ -113,7 +113,7 @@ function InterviewHome({ params, searchParams }: Props) {
     };
 
     fetchOrganizationData();
-  }, [organization]);
+  }, []);
   useEffect(() => {
     const fetchResponses = async () => {
       try {

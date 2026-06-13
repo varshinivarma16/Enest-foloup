@@ -54,7 +54,7 @@ function Interviews() {
     };
 
     fetchOrganizationData();
-  }, [organization]);
+  }, []);
 
   useEffect(() => {
     const fetchResponsesCount = async () => {
@@ -81,7 +81,7 @@ function Interviews() {
     };
 
     fetchResponsesCount();
-  }, [organization, currentPlan, allowedResponsesCount]);
+  }, [currentPlan, allowedResponsesCount]);
 
   return (
     <main className="p-8 pt-0 ml-12 mr-auto rounded-md">

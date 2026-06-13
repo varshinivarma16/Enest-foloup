@@ -1,8 +1,8 @@
 import { INTERVIEWERS, RETELL_AGENT_GENERAL_PROMPT } from "@/lib/constants";
 import { logger } from "@/lib/logger";
+import { createClient } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
 import Retell from "retell-sdk";
-import { createClient } from "@supabase/supabase-js";
 
 const retellClient = new Retell({
   apiKey: process.env.RETELL_API_KEY || "",
@@ -10,7 +10,7 @@ const retellClient = new Retell({
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
 );
 
 const createInterviewerServer = async (payload: any) => {
@@ -29,7 +29,11 @@ const createInterviewerServer = async (payload: any) => {
     logger.error("An interviewer with this name already exists");
     return null;
   }
-  const { error, data } = await supabase.from("interviewer").insert({ ...payload }).select().single();
+  const { error, data } = await supabase
+    .from("interviewer")
+    .insert({ ...payload })
+    .select()
+    .single();
   if (error) {
     logger.error(`Error creating interviewer: ${JSON.stringify(error)}`);
     return null;

@@ -292,7 +292,9 @@ function CallInfo({ call_id, onDeleteResponse, onCandidateStatusChange }: CallPr
                         src={videoUrl}
                         controls
                         className="rounded-xl max-h-64 max-w-sm border border-slate-300 shadow"
-                      />
+                      >
+                        <track kind="captions" />
+                      </video>
                       <a
                         className="my-auto"
                         href={videoUrl}
