@@ -185,6 +185,7 @@ function Interviews() {
               viewBox="0 0 24 24"
               stroke="currentColor"
             >
+              <title>Information icon</title>
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
