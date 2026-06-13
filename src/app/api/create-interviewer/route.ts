@@ -1,12 +1,41 @@
 import { INTERVIEWERS, RETELL_AGENT_GENERAL_PROMPT } from "@/lib/constants";
 import { logger } from "@/lib/logger";
-import { InterviewerService } from "@/services/interviewers.service";
 import { type NextRequest, NextResponse } from "next/server";
 import Retell from "retell-sdk";
+import { createClient } from "@supabase/supabase-js";
 
 const retellClient = new Retell({
   apiKey: process.env.RETELL_API_KEY || "",
 });
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+);
+
+const createInterviewerServer = async (payload: any) => {
+  const { data: existingInterviewer, error: checkError } = await supabase
+    .from("interviewer")
+    .select("*")
+    .eq("name", payload.name)
+    .filter("agent_id", "eq", payload.agent_id)
+    .single();
+
+  if (checkError && checkError.code !== "PGRST116") {
+    logger.error("Error checking existing interviewer: " + JSON.stringify(checkError));
+    return null;
+  }
+  if (existingInterviewer) {
+    logger.error("An interviewer with this name already exists");
+    return null;
+  }
+  const { error, data } = await supabase.from("interviewer").insert({ ...payload }).select().single();
+  if (error) {
+    logger.error("Error creating interviewer: " + JSON.stringify(error));
+    return null;
+  }
+  return data;
+};
 
 export async function GET(res: NextRequest) {
   logger.info("create-interviewer request received");
@@ -32,7 +61,7 @@ export async function GET(res: NextRequest) {
       agent_name: "Lisa",
     });
 
-    const newInterviewer = await InterviewerService.createInterviewer({
+    const newInterviewer = await createInterviewerServer({
       agent_id: newFirstAgent.agent_id,
       ...INTERVIEWERS.LISA,
     });
@@ -44,7 +73,7 @@ export async function GET(res: NextRequest) {
       agent_name: "Bob",
     });
 
-    const newSecondInterviewer = await InterviewerService.createInterviewer({
+    const newSecondInterviewer = await createInterviewerServer({
       agent_id: newSecondAgent.agent_id,
       ...INTERVIEWERS.BOB,
     });

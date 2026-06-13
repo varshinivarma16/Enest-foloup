@@ -13,6 +13,7 @@ export interface Response {
   analytics: any;
   candidate_status: string;
   tab_switch_count: number;
+  video_url?: string;
 }
 
 export interface Analytics {

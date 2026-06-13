@@ -1,11 +1,16 @@
 import { logger } from "@/lib/logger";
-import { InterviewerService } from "@/services/interviewers.service";
 import { NextResponse } from "next/server";
 import Retell from "retell-sdk";
+import { createClient } from "@supabase/supabase-js";
 
 const retellClient = new Retell({
   apiKey: process.env.RETELL_API_KEY || "",
 });
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+);
 
 export async function POST(req: Request) {
   logger.info("register-call request received");
@@ -13,7 +18,11 @@ export async function POST(req: Request) {
   const body = await req.json();
 
   const interviewerId = body.interviewer_id;
-  const interviewer = await InterviewerService.getInterviewer(interviewerId);
+  const { data: interviewer } = await supabase
+    .from("interviewer")
+    .select("*")
+    .eq("id", interviewerId)
+    .single();
 
   const registerCallResponse = await retellClient.call.createWebCall({
     agent_id: interviewer?.agent_id,

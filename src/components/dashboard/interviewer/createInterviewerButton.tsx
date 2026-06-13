@@ -2,19 +2,27 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { InterviewerService } from "@/services/interviewers.service";
+import { useInterviewers } from "@/contexts/interviewers.context";
 import axios from "axios";
 import { Loader2, Plus } from "lucide-react";
 import { useState } from "react";
 
 function CreateInterviewerButton() {
   const [isLoading, setIsLoading] = useState(false);
+  const { setInterviewers } = useInterviewers();
 
   const createInterviewers = async () => {
     setIsLoading(true);
-    const response = await axios.get("/api/create-interviewer", {});
-    console.log(response);
-    setIsLoading(false);
-    InterviewerService.getAllInterviewers();
+    try {
+      const response = await axios.get("/api/create-interviewer", {});
+      console.log(response);
+      const data = await InterviewerService.getAllInterviewers();
+      setInterviewers(data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

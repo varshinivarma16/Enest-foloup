@@ -20,7 +20,7 @@ import { ResponseService } from "@/services/responses.service";
 import type { Interview } from "@/types/interview";
 import type { FeedbackData } from "@/types/response";
 import axios from "axios";
-import { AlarmClockIcon, ArrowUpRightSquareIcon, CheckCircleIcon, XCircleIcon } from "lucide-react";
+import { AlarmClockIcon, ArrowUpRightSquareIcon, CheckCircleIcon, Loader2, VideoIcon, VideoOffIcon, XCircleIcon } from "lucide-react";
 import Image from "next/image";
 import React, { useState, useEffect, useRef } from "react";
 import { RetellWebClient } from "retell-client-js-sdk";
@@ -72,7 +72,113 @@ function Call({ interview }: InterviewProps) {
   const [time, setTime] = useState(0);
   const [currentTimeDuration, setCurrentTimeDuration] = useState<string>("0");
 
+  // Video recording state
+  const [cameraAllowed, setCameraAllowed] = useState<boolean | null>(null); // null = not yet asked
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
+  const videoPreviewRef = useRef<HTMLVideoElement | null>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recordedChunksRef = useRef<Blob[]>([]);
+  const callIdRef = useRef<string>("");
+  const uploadPromiseRef = useRef<Promise<void> | null>(null);
+
   const lastUserResponseRef = useRef<HTMLDivElement | null>(null);
+
+  // Request camera access on mount
+  useEffect(() => {
+    const requestCamera = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        mediaStreamRef.current = stream;
+        setCameraAllowed(true);
+        if (videoPreviewRef.current) {
+          videoPreviewRef.current.srcObject = stream;
+        }
+      } catch {
+        setCameraAllowed(false);
+      }
+    };
+    requestCamera();
+
+    return () => {
+      // Cleanup camera stream on unmount
+      mediaStreamRef.current?.getTracks().forEach((t) => t.stop());
+    };
+  }, []);
+
+  // Attach stream to video element once both are ready
+  useEffect(() => {
+    if (cameraAllowed && videoPreviewRef.current && mediaStreamRef.current) {
+      videoPreviewRef.current.srcObject = mediaStreamRef.current;
+    }
+  }, [cameraAllowed]);
+
+  // Re-attach stream when interview starts (video element only mounts then)
+  useEffect(() => {
+    if (isStarted && cameraAllowed && mediaStreamRef.current) {
+      // Small timeout to allow React to finish rendering the video element
+      const timer = setTimeout(() => {
+        if (videoPreviewRef.current) {
+          videoPreviewRef.current.srcObject = mediaStreamRef.current;
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isStarted, cameraAllowed]);
+
+  const startRecording = () => {
+    if (!mediaStreamRef.current) return;
+    recordedChunksRef.current = [];
+    uploadPromiseRef.current = null;
+    const recorder = new MediaRecorder(mediaStreamRef.current);
+    recorder.ondataavailable = (e) => {
+      if (e.data.size > 0) recordedChunksRef.current.push(e.data);
+    };
+    recorder.start(1000); // collect data every second
+    mediaRecorderRef.current = recorder;
+  };
+
+  const stopRecordingAndUpload = (currentCallId: string): Promise<void> => {
+    if (uploadPromiseRef.current) return uploadPromiseRef.current;
+
+    const recorder = mediaRecorderRef.current;
+    if (!recorder || recorder.state === "inactive") return Promise.resolve();
+
+    uploadPromiseRef.current = new Promise<void>((resolve) => {
+      recorder.onstop = async () => {
+        const blob = new Blob(recordedChunksRef.current, { type: "video/webm" });
+        if (blob.size > 0 && currentCallId) {
+          setIsUploadingVideo(true);
+          try {
+            const formData = new FormData();
+            formData.append("file", blob, `${currentCallId}.webm`);
+            formData.append("callId", currentCallId);
+
+            const res = await fetch("/api/upload-video", {
+              method: "POST",
+              body: formData,
+            });
+
+            if (!res.ok) {
+              const err = await res.json();
+              console.error("Video upload failed:", err);
+            }
+          } catch (err) {
+            console.error("Video upload error:", err);
+          } finally {
+            setIsUploadingVideo(false);
+          }
+        }
+        // Stop camera tracks
+        mediaStreamRef.current?.getTracks().forEach((t) => t.stop());
+        resolve();
+      };
+      recorder.stop();
+    });
+
+    return uploadPromiseRef.current;
+  };
+
 
   const handleFeedbackSubmit = async (formData: Omit<FeedbackData, "interview_id">) => {
     try {
@@ -129,12 +235,14 @@ function Call({ interview }: InterviewProps) {
     webClient.on("call_started", () => {
       console.log("Call started");
       setIsCalling(true);
+      startRecording();
     });
 
     webClient.on("call_ended", () => {
       console.log("Call ended");
       setIsCalling(false);
       setIsEnded(true);
+      stopRecordingAndUpload(callIdRef.current);
     });
 
     webClient.on("agent_start_talking", () => {
@@ -178,6 +286,7 @@ function Call({ interview }: InterviewProps) {
     if (isStarted) {
       setLoading(true);
       webClient.stopCall();
+      await stopRecordingAndUpload(callIdRef.current);
       setIsEnded(true);
       setLoading(false);
     } else {
@@ -217,11 +326,13 @@ function Call({ interview }: InterviewProps) {
         setIsCalling(true);
         setIsStarted(true);
 
-        setCallId(registerCallResponse?.data?.registerCallResponse?.call_id);
+        const newCallId = registerCallResponse?.data?.registerCallResponse?.call_id;
+        setCallId(newCallId);
+        callIdRef.current = newCallId;
 
         const response = await createResponse({
           interview_id: interview.id,
-          call_id: registerCallResponse.data.registerCallResponse.call_id,
+          call_id: newCallId,
           email: email,
           name: name,
         });
@@ -325,6 +436,24 @@ function Call({ interview }: InterviewProps) {
                       {"\n\n"}Note: Tab switching will be recorded.
                     </p>
                   </div>
+                  {/* Camera status indicator */}
+                  <div className="flex items-center gap-2 px-2 pb-2 text-xs font-normal">
+                    {cameraAllowed === true && (
+                      <>
+                        <VideoIcon size={14} className="text-green-500" />
+                        <span className="text-green-600">Camera ready — your video will be recorded</span>
+                      </>
+                    )}
+                    {cameraAllowed === false && (
+                      <>
+                        <VideoOffIcon size={14} className="text-gray-400" />
+                        <span className="text-gray-500">Camera not available — audio only</span>
+                      </>
+                    )}
+                    {cameraAllowed === null && (
+                      <span className="text-gray-400">Requesting camera access…</span>
+                    )}
+                  </div>
                   {!interview?.is_anonymous && (
                     <div className="flex flex-col gap-2 justify-center">
                       <div className="flex justify-center">
@@ -390,8 +519,9 @@ function Call({ interview }: InterviewProps) {
             )}
             {isStarted && !isEnded && !isOldUser && (
               <div className="flex flex-row p-2 grow">
-                <div className="border-x-2 border-grey w-[50%] my-auto min-h-[70%]">
-                  <div className="flex flex-col justify-evenly">
+                {/* Left side — interviewer */}
+                <div className="border-r-2 border-grey w-[50%] my-auto min-h-[70%]">
+                  <div className="flex flex-col justify-evenly h-full">
                     <div
                       className={
                         "text-[22px] w-[80%] md:text-[26px] mt-4 min-h-[250px] mx-auto px-6"
@@ -399,7 +529,7 @@ function Call({ interview }: InterviewProps) {
                     >
                       {lastInterviewerResponse}
                     </div>
-                    <div className="flex flex-col mx-auto justify-center items-center align-middle">
+                    <div className="flex flex-col mx-auto justify-center items-center align-middle pb-4">
                       <Image
                         src={interviewerImg}
                         alt="Image of the interviewer"
@@ -411,34 +541,62 @@ function Call({ interview }: InterviewProps) {
                             : ""
                         }`}
                       />
-                      <div className="font-semibold">Interviewer</div>
+                      <div className="font-semibold mt-2">Interviewer</div>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex flex-col justify-evenly w-[50%]">
-                  <div
-                    ref={lastUserResponseRef}
-                    className={
-                      "text-[22px] w-[80%] md:text-[26px] mt-4 mx-auto h-[250px] px-6 overflow-y-auto"
-                    }
-                  >
-                    {lastUserResponse}
-                  </div>
-                  <div className="flex flex-col mx-auto justify-center items-center align-middle">
-                    <Image
-                      src={"/user-icon.png"}
-                      alt="Picture of the user"
-                      width={120}
-                      height={120}
-                      className={`object-cover object-center mx-auto my-auto ${
-                        activeTurn === "user"
-                          ? `border-4 border-[${interview.theme_color}] rounded-full`
-                          : ""
-                      }`}
-                    />
-                    <div className="font-semibold">You</div>
-                  </div>
+                {/* Right side — full live camera feed */}
+                <div className="w-[50%] flex flex-col relative bg-black overflow-hidden">
+                  {cameraAllowed ? (
+                    <>
+                      <video
+                        ref={videoPreviewRef}
+                        autoPlay
+                        muted
+                        playsInline
+                        className="w-full h-full object-cover scale-x-[-1]"
+                        style={{ minHeight: "300px" }}
+                      />
+                      {/* Candidate transcript overlay — bottom of video */}
+                      {lastUserResponse && (
+                        <div
+                          ref={lastUserResponseRef}
+                          className="absolute bottom-0 left-0 right-0 bg-black/50 backdrop-blur-sm text-white text-base px-4 py-3 max-h-[120px] overflow-y-auto"
+                        >
+                          {lastUserResponse}
+                        </div>
+                      )}
+                      {/* "You" label — top-left */}
+                      <div className={`absolute top-3 left-3 bg-black/40 text-white text-sm font-semibold px-3 py-1 rounded-full border ${activeTurn === "user" ? "border-indigo-400" : "border-transparent"}`}>
+                        You
+                      </div>
+                    </>
+                  ) : (
+                    /* Fallback when no camera */
+                    <div className="flex flex-col justify-evenly h-full bg-white">
+                      <div
+                        ref={lastUserResponseRef}
+                        className="text-[22px] w-[80%] md:text-[26px] mt-4 mx-auto h-[250px] px-6 overflow-y-auto"
+                      >
+                        {lastUserResponse}
+                      </div>
+                      <div className="flex flex-col mx-auto justify-center items-center align-middle pb-4">
+                        <Image
+                          src={"/user-icon.png"}
+                          alt="Picture of the user"
+                          width={120}
+                          height={120}
+                          className={`object-cover object-center mx-auto my-auto ${
+                            activeTurn === "user"
+                              ? `border-4 border-[${interview.theme_color}] rounded-full`
+                              : ""
+                          }`}
+                        />
+                        <div className="font-semibold mt-2">You</div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -487,13 +645,19 @@ function Call({ interview }: InterviewProps) {
                         ? "Thank you for taking the time to participate in this interview"
                         : "Thank you very much for considering."}
                     </p>
+                    {isUploadingVideo && (
+                      <div className="flex items-center justify-center gap-2 mt-3 text-sm text-indigo-500">
+                        <Loader2 size={16} className="animate-spin" />
+                        <span>Saving your video recording…</span>
+                      </div>
+                    )}
                     <p className="text-center">
                       {"\n"}
-                      You can close this tab now.
+                      {isUploadingVideo ? "" : "You can close this tab now."}
                     </p>
                   </div>
 
-                  {!isFeedbackSubmitted && (
+                  {!isFeedbackSubmitted && !isUploadingVideo && (
                     <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                       <AlertDialogTrigger className="w-full flex justify-center">
                         <Button

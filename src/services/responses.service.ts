@@ -116,6 +116,37 @@ const updateResponse = async (payload: any, call_id: string) => {
   return data;
 };
 
+const uploadVideoRecording = async (blob: Blob, callId: string): Promise<string | null> => {
+  try {
+    const fileName = `recordings/${callId}.webm`;
+    const { error } = await supabase.storage
+      .from("interview-recordings")
+      .upload(fileName, blob, { contentType: "video/webm", upsert: true });
+
+    if (error) {
+      console.error("Error uploading video:", error);
+      return null;
+    }
+
+    const { data } = supabase.storage.from("interview-recordings").getPublicUrl(fileName);
+    return data.publicUrl;
+  } catch (error) {
+    console.error("Error uploading video:", error);
+    return null;
+  }
+};
+
+const saveVideoUrl = async (callId: string, videoUrl: string) => {
+  const { error } = await supabase
+    .from("response")
+    .update({ video_url: videoUrl })
+    .eq("call_id", callId);
+
+  if (error) {
+    console.error("Error saving video URL:", error);
+  }
+};
+
 export const ResponseService = {
   createResponse,
   saveResponse,
@@ -125,4 +156,6 @@ export const ResponseService = {
   deleteResponse,
   getResponseCountByOrganizationId,
   getAllEmails: getAllEmailAddressesForInterview,
+  uploadVideoRecording,
+  saveVideoUrl,
 };

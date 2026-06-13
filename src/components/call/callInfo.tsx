@@ -55,6 +55,7 @@ function CallInfo({ call_id, onDeleteResponse, onCandidateStatusChange }: CallPr
   const [candidateStatus, setCandidateStatus] = useState<string>("");
   const [interviewId, setInterviewId] = useState<string>("");
   const [tabSwitchCount, setTabSwitchCount] = useState<number>();
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchResponses = async () => {
@@ -88,6 +89,7 @@ function CallInfo({ call_id, onDeleteResponse, onCandidateStatusChange }: CallPr
         setCandidateStatus(response.candidate_status);
         setInterviewId(response.interview_id);
         setTabSwitchCount(response.tab_switch_count);
+        setVideoUrl(response.video_url ?? null);
       } catch (error) {
         console.error(error);
       } finally {
@@ -282,6 +284,26 @@ function CallInfo({ call_id, onDeleteResponse, onCandidateStatusChange }: CallPr
                     </a>
                   </div>
                 </div>
+                {videoUrl && (
+                  <div className="flex flex-col mt-4">
+                    <p className="font-semibold mb-2">Candidate Video</p>
+                    <div className="flex flex-row gap-3 items-center">
+                      <video
+                        src={videoUrl}
+                        controls
+                        className="rounded-xl max-h-64 max-w-sm border border-slate-300 shadow"
+                      />
+                      <a
+                        className="my-auto"
+                        href={videoUrl}
+                        download="candidate-video.webm"
+                        aria-label="Download candidate video"
+                      >
+                        <DownloadIcon size={20} />
+                      </a>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
             {/* <div>{call.}</div> */}
