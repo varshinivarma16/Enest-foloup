@@ -27,7 +27,7 @@ export async function POST(req: Request) {
       .upload(fileName, buffer, { contentType: "video/webm", upsert: true });
 
     if (uploadError) {
-      logger.error("Storage upload error: " + JSON.stringify(uploadError));
+      logger.error(`Storage upload error: ${JSON.stringify(uploadError)}`);
       return NextResponse.json({ error: "Upload failed", details: uploadError }, { status: 500 });
     }
 
@@ -41,12 +41,12 @@ export async function POST(req: Request) {
       .eq("call_id", callId);
 
     if (updateError) {
-      logger.error("DB update error: " + JSON.stringify(updateError));
+      logger.error(`DB update error: ${JSON.stringify(updateError)}`);
     }
 
     return NextResponse.json({ url: publicUrl }, { status: 200 });
   } catch (error) {
-    logger.error("Upload video error: " + String(error));
+    logger.error(`Upload video error: ${String(error)}`);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -22,7 +22,7 @@ const createInterviewerServer = async (payload: any) => {
     .single();
 
   if (checkError && checkError.code !== "PGRST116") {
-    logger.error("Error checking existing interviewer: " + JSON.stringify(checkError));
+    logger.error(`Error checking existing interviewer: ${JSON.stringify(checkError)}`);
     return null;
   }
   if (existingInterviewer) {
@@ -31,7 +31,7 @@ const createInterviewerServer = async (payload: any) => {
   }
   const { error, data } = await supabase.from("interviewer").insert({ ...payload }).select().single();
   if (error) {
-    logger.error("Error creating interviewer: " + JSON.stringify(error));
+    logger.error(`Error creating interviewer: ${JSON.stringify(error)}`);
     return null;
   }
   return data;
